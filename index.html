@@ -116,7 +116,8 @@
         "หวยรัฐบาล": [{n:"รัฐบาลไทย", f:"th"}, {n:"ธ.ก.ส", f:"th"}, {n:"ออมสิน", f:"th"}]
     };
 
-
+    // ตั้งชื่อ Storage Key เฉพาะกลุ่มให้ยาวและไม่ซ้ำกับใครชัวร์ๆ
+    const STORAGE_KEY = "hongthong_lucky_exclusive_device_storage_v2_2026";
     let curF = "หวย จันทร์-ศุกร์", curI = 0, isLocked = false, curDate = new Date(), currentScale = 100;
 
     function changeFontSize(scalePercent) {
@@ -211,14 +212,16 @@
         save(); 
     }
 
+    // ฟังก์ชัน Save เปลี่ยนมาใช้คีย์ STORAGE_KEY ที่เราตั้งไว้แบบเฉพาะเจาะจง
     function save() { 
         const s = {}; 
         document.querySelectorAll('.number-box, .drag-group').forEach(b => { s[b.id] = {x:b.getAttribute('data-x')||0, y:b.getAttribute('data-y')||0, txt:b.textContent}; }); 
-        localStorage.setItem('napas_new', JSON.stringify({s, curF, curI, date:curDate, scale:currentScale})); 
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({s, curF, curI, date:curDate, scale:currentScale})); 
     }
     
+    // ฟังก์ชัน Load ดึงข้อมูลจาก STORAGE_KEY ตัวใหม่
     function load() { 
-        const d = JSON.parse(localStorage.getItem('napas_new')); 
+        const d = JSON.parse(localStorage.getItem(STORAGE_KEY)); 
         if(d) { 
             curF = d.curF; curI = d.curI; curDate = new Date(d.date); currentScale = d.scale || 100; 
             document.getElementById('fontSizeSlider').value = currentScale; changeFontSize(currentScale); 
@@ -227,8 +230,13 @@
         } 
     }
     
+    // ฟังก์ชัน Reset ล้างคีย์อันใหม่ทิ้ง
+    function resetAll() { 
+        localStorage.removeItem(STORAGE_KEY); 
+        location.reload(); 
+    }
+    
     function toggleLock() { isLocked = !isLocked; document.getElementById('lock-btn').textContent = isLocked ? "🔒 ล็อคแล้ว" : "🔓 ปลดล็อค"; document.getElementById('size-panel').style.display = isLocked ? "none" : "block"; }
-    function resetAll() { localStorage.removeItem('napas_new'); location.reload(); }
     function filterLottery(q) { document.querySelectorAll('.btn-lotto').forEach(b => b.style.display = b.textContent.toLowerCase().includes(q.toLowerCase()) ? "block" : "none"); }
     
     interact('.number-box, .drag-group').draggable({ listeners: { move(e) { if(!isLocked) { const t=e.target; const x=(parseFloat(t.getAttribute('data-x'))||0)+e.dx; const y=(parseFloat(t.getAttribute('data-y'))||0)+e.dy; t.style.transform=`translate(${x}px, ${y}px)`; t.setAttribute('data-x', x); t.setAttribute('data-y', y); save(); } } } });
